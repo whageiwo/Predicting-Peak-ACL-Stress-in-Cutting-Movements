@@ -20,23 +20,23 @@ st.markdown("<h1 style='text-align: center; color: darkred;'>Predicting Peak ACL
 model = joblib.load("final_XGJ_model.bin")   # ✅ joblib加载
 
 # ------------------ 定义特征名称 ------------------
-feature_names = ["HFA", "KFA", "HAA", "KVA", "AAA", "KVM", "ASF", "H/Q"]
+feature_names = ["HFA", "KFA", "HAA", "KVA", "AVA", "KVM", "KFM", "ASF", "H/Q"]
 
 # ------------------ 页面布局 ------------------
 col1, col2, col3 = st.columns([1.2, 1.2, 2.5])
 label_size = "16px"
 inputs = []
 
-# -------- 左列前 4 个特征 --------
+# -------- 左列前 5 个特征 --------
 with col1:
-    for name in feature_names[:4]:
+    for name in feature_names[:5]:  # 前5个特征放在左列
         st.markdown(f"<p style='font-size:{label_size}; margin:0'>{name}</p>", unsafe_allow_html=True)
         val = st.number_input("", value=0.0, step=0.1, format="%.2f", key=name)
         inputs.append(val)
 
 # -------- 中列后 4 个特征 --------
 with col2:
-    for name in feature_names[4:]:
+    for name in feature_names[5:]:  # 后4个特征放在中列
         st.markdown(f"<p style='font-size:{label_size}; margin:0'>{name}</p>", unsafe_allow_html=True)
         val = st.number_input("", value=0.0, step=0.1, format="%.2f", key=name)
         inputs.append(val)
