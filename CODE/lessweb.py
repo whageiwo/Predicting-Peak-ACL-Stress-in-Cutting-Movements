@@ -73,21 +73,20 @@ with col3:
     shap.plots.waterfall(shap_expl, show=False)
     st.pyplot(fig)
 
-# ------------------ 新增：力图横跨三列 + 居中 ------------------
+# ------------------ 横跨三列显示完整力图 ------------------
 st.markdown("<h3 style='color:purple; text-align:center;'>Force Plot</h3>", unsafe_allow_html=True)
 
-# 生成 SHAP 力图
 force_plot = shap.force_plot(
     explainer.expected_value, shap_values.values[0], X_input[0], feature_names=feature_names
 )
 
-# 居中显示（加外层 div 控制宽度和居中）
+# ✅ 自动适配 + 居中 + 不裁剪
 html_code = f"""
-<div style='display: flex; justify-content: center;'>
-    <div style='width:80%; text-align:center;'>
-        <head>{shap.getjs()}</head>
-        {force_plot.html()}
-    </div>
+<div style='display:flex; justify-content:center;'>
+  <div style='width:95%; overflow-x:auto;'>
+    <head>{shap.getjs()}</head>
+    {force_plot.html()}
+  </div>
 </div>
 """
-components.html(html_code, height=400)
+components.html(html_code, height=1000, scrolling=True)
