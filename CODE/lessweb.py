@@ -87,7 +87,7 @@ fig, ax = plt.subplots(figsize=(6, 6))
 shap.plots.waterfall(shap_expl, max_display=len(feature_names), show=False)
 st.pyplot(fig)
 
-# --- 力图（横跨整行） ---
+# --- 力图（横跨整行 + 特征名完整显示 + 可滚动） ---
 st.markdown("<h3 style='color:purple; text-align:center;'>Force Plot</h3>", unsafe_allow_html=True)
 
 force_plot = shap.force_plot(
@@ -97,15 +97,17 @@ force_plot = shap.force_plot(
     feature_names=feature_names
 )
 
-# HTML 容器横向滚动 + 宽度铺满 + 特征名完整显示
+# HTML 容器：横向滚动 + 宽度足够 + 居中
 html_code = f"""
-<div style='display:flex; justify-content:center;'>
-  <div style='width:1800px; overflow-x:auto; white-space:nowrap;'>
-    <head>{shap.getjs()}</head>
-    {force_plot.html()}
-  </div>
+<div style='width:100%; display:flex; justify-content:center;'>
+    <div style='min-width:2500px; overflow-x:auto; white-space:nowrap;'>
+        <head>{shap.getjs()}</head>
+        {force_plot.html()}
+    </div>
 </div>
 """
 
-# 显示完整力图
+# 显示力图，允许滚动
 components.html(html_code, height=600, scrolling=True)
+
+
