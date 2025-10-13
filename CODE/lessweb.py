@@ -16,27 +16,31 @@ plt.rcParams['font.weight'] = 'bold'
 # ------------------ 页面标题 ------------------
 st.markdown("<h1 style='text-align: center; color: darkred;'>Predicting Peak ACL Stress in Cutting Movements</h1>", unsafe_allow_html=True)
 
-# ------------------ 加载模型（回归模型） ------------------
-model = joblib.load("final_XGJ_model.bin")   # ✅ joblib加载
+# ------------------ 加载模型 ------------------
+model = joblib.load("final_XGJ_model.bin")
 
 # ------------------ 定义特征名称 ------------------
-feature_names = ["Hip Flexion Angle(HFA)", "Knee Flexion Angle(KFA)", "Hip Adduction Ankle(HAA)", "Knee Valgus Ankle(KVA)", "Ankle Valgus Ankle(AVA)", "Knee Valgus Moment(KVM)", "Knee Flexion moment(KFM)", "Anterior Tibial Shear Force (ASF)", "Hamstring/Quadriceps(H/Q)"]
+feature_names = [
+    "Hip Flexion Angle(HFA)", "Knee Flexion Angle(KFA)", "Hip Adduction Ankle(HAA)",
+    "Knee Valgus Ankle(KVA)", "Ankle Valgus Ankle(AVA)", "Knee Valgus Moment(KVM)",
+    "Knee Flexion moment(KFM)", "Anterior Tibial Shear Force (ASF)", "Hamstring/Quadriceps(H/Q)"
+]
 
 # ------------------ 页面布局 ------------------
 col1, col2, col3 = st.columns([1.2, 1.2, 2.5])
 label_size = "16px"
 inputs = []
 
-# -------- 左列前 5 个特征 --------
+# -------- 左列前5个特征 --------
 with col1:
-    for name in feature_names[:5]:  # 前5个特征放在左列
+    for name in feature_names[:5]:
         st.markdown(f"<p style='font-size:{label_size}; margin:0'>{name}</p>", unsafe_allow_html=True)
         val = st.number_input("", value=0.0, step=0.1, format="%.2f", key=name)
         inputs.append(val)
 
-# -------- 中列后 4 个特征 --------
+# -------- 中列后4个特征 --------
 with col2:
-    for name in feature_names[5:]:  # 后4个特征放在中列
+    for name in feature_names[5:]:
         st.markdown(f"<p style='font-size:{label_size}; margin:0'>{name}</p>", unsafe_allow_html=True)
         val = st.number_input("", value=0.0, step=0.1, format="%.2f", key=name)
         inputs.append(val)
@@ -69,9 +73,21 @@ with col3:
     shap.plots.waterfall(shap_expl, show=False)
     st.pyplot(fig)
 
-    # --- 力图 ---
-    st.markdown("<h3 style='color:purple;'>Force Plot</h3>", unsafe_allow_html=True)
-    force_plot = shap.force_plot(
-        explainer.expected_value, shap_values.values[0], X_input[0], feature_names=feature_names
-    )
-    components.html(f"<head>{shap.getjs()}</head>{force_plot.html()}", height=300)
+# ------------------ 新增：力图横跨三列 + 居中 ------------------
+st.markdown("<h3 style='color:purple; text-align:center;'>Force Plot</h3>", unsafe_allow_html=True)
+
+# 生成 SHAP 力图
+force_plot = shap.force_plot(
+    explainer.expected_value, shap_values.values[0], X_input[0], feature_names=feature_names
+)
+
+# 居中显示（加外层 div 控制宽度和居中）
+html_code = f"""
+<div style='display: flex; justify-content: center;'>
+    <div style='width:80%; text-align:center;'>
+        <head>{shap.getjs()}</head>
+        {force_plot.html()}
+    </div>
+</div>
+"""
+components.html(html_code, height=400)
