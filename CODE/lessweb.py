@@ -26,12 +26,6 @@ feature_names = [
     "Knee Flexion moment(KFM)", "Anterior Tibial Shear Force (ASF)", "Hamstring/Quadriceps(H/Q)"
 ]
 
-short_feature_names = [
-    "Hip Flexion", "Knee Flexion", "Hip Adduction",
-    "Knee Valgus", "Ankle Valgus", "KVM",
-    "KFM", "Anterior Shear", "H/Q Ratio"
-]
-
 # ------------------ 页面布局 ------------------
 col1, col2, col3 = st.columns([1.2, 1.2, 2.5])
 label_size = "16px"
@@ -65,39 +59,34 @@ with col2:
 with col3:
     explainer = shap.TreeExplainer(model)
     shap_values = explainer(X_input)
-    
-    # --- 瀑布图 ---
-    st.markdown("<h3 style='color:darkorange;'>Waterfall Plot</h3>", unsafe_allow_html=True)
+
     shap_expl = shap.Explanation(
         values=shap_values.values[0],
         base_values=shap_values.base_values[0],
         data=X_input[0],
-        feature_names=short_feature_names
+        feature_names=feature_names
     )
+
+    # --- 瀑布图 ---
+    st.markdown("<h3 style='color:darkorange;'>Waterfall Plot</h3>", unsafe_allow_html=True)
     fig, ax = plt.subplots(figsize=(6, 6))
     shap.plots.waterfall(shap_expl, show=False)
     st.pyplot(fig)
 
-# -------- 力图：自适应宽度 + 横跨三列居中 --------
+# ------------------ 横跨三列显示完整力图 ------------------
 st.markdown("<h3 style='color:purple; text-align:center;'>Force Plot</h3>", unsafe_allow_html=True)
 
 force_plot = shap.force_plot(
-    explainer.expected_value,
-    shap_values.values[0],
-    X_input[0],
-    feature_names=short_feature_names
+    explainer.expected_value, shap_values.values[0], X_input[0], feature_names=feature_names
 )
 
-# HTML 容器横跨全宽，力图自适应
+# ✅ 自动适配 + 居中 + 不裁剪
 html_code = f"""
-<div style='width:100%; display:flex; justify-content:center; margin-top:20px;'>
-    <div style='width:90%; overflow-x:auto; border:1px solid #ddd; padding:5px;'>
-        <div style='min-width:{len(short_feature_names)*150}px;'> 
-            <head>{shap.getjs()}</head>
-            {force_plot.html()}
-        </div>
-    </div>
+<div style='display:flex; justify-content:center;'>
+  <div style='width:95%; overflow-x:auto;'>
+    <head>{shap.getjs()}</head>
+    {force_plot.html()}
+  </div>
 </div>
 """
-components.html(html_code, height=400)
-
+components.html(html_code, height=1000, scrolling=True)
