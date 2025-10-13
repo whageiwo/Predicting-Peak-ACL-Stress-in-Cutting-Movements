@@ -22,7 +22,7 @@ model = joblib.load("final_XGJ_model.bin")
 # ------------------ 定义特征名称 ------------------
 # 完整特征名称（用于输入界面）
 feature_full_names = [
-   "Hip Flexion Angle(HFA)", "Knee Flexion Angle(KFA)", "Hip Adduction Ankle(HAA)",
+    "Hip Flexion Angle(HFA)", "Knee Flexion Angle(KFA)", "Hip Adduction Ankle(HAA)",
     "Knee Valgus Ankle(KVA)", "Ankle Valgus Ankle(AVA)", "Knee Valgus Moment(KVM)",
     "Knee Flexion moment(KFM)", "Anterior Tibial Shear Force (ASF)", "Hamstring/Quadriceps(H/Q)"
 ]
@@ -41,14 +41,14 @@ inputs = []
 
 # -------- 左列前5个特征 --------
 with col1:
-    for i, name in enumerate(feature_full_names[:5]):
+    for name in feature_full_names[:5]:
         st.markdown(f"<p style='font-size:{label_size}; margin:0'>{name}</p>", unsafe_allow_html=True)
         val = st.number_input("", value=0.0, step=0.1, format="%.2f", key=name)
         inputs.append(val)
 
 # -------- 中列后4个特征 --------
 with col2:
-    for i, name in enumerate(feature_full_names[5:]):
+    for name in feature_full_names[5:]:
         st.markdown(f"<p style='font-size:{label_size}; margin:0'>{name}</p>", unsafe_allow_html=True)
         val = st.number_input("", value=0.0, step=0.1, format="%.2f", key=name)
         inputs.append(val)
@@ -73,7 +73,7 @@ with col3:
         values=shap_values.values[0],
         base_values=shap_values.base_values[0],
         data=X_input[0],
-        feature_names=feature_abbreviations  # 直接使用缩写名称
+        feature_names=feature_abbreviations  # 使用缩写名称
     )
 
     # --- 瀑布图 ---
@@ -85,23 +85,40 @@ with col3:
 # ------------------ 横跨三列显示完整力图 ------------------
 st.markdown("<h3 style='color:purple; text-align:center;'>Force Plot</h3>", unsafe_allow_html=True)
 
-# 使用缩写名称创建力图
+# 使用缩写名称创建力图（强制显示所有特征）
 force_plot = shap.force_plot(
     explainer.expected_value,
     shap_values.values[0],
     X_input[0],
-    feature_names=feature_abbreviations  # 直接使用缩写名称
+    feature_names=feature_abbreviations,
+    plot_cmap="PkYg",  # 使用高对比度颜色
+    contribution_threshold=0.001  # 降低过滤阈值确保显示所有特征
 )
 
-# 调整力图显示
+# 调整力图显示（增加高度和滚动条）
 html_code = f"""
-<div style='display:flex; justify-content:center;'>
-  <div style='width:95%; overflow-x:auto;'>
+<style>
+.shap-force-plot text {{
+    font-size: 12px !important;
+}}
+.scroll-container {{
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px;
+    background-color: white;
+}}
+</style>
+<div class="scroll-container">
     <head>{shap.getjs()}</head>
     {force_plot.html()}
-  </div>
 </div>
 """
-components.html(html_code, height=300, scrolling=True)
+components.html(html_code, height=400, scrolling=True)
 
-
+# 调试信息（可选）
+with st.expander("Debug Info"):
+    st.write("Input values:", X_input)
+    st.write("SHAP values:", shap_values.values[0])
+    st.write("Feature abbreviations:", feature_abbreviations)
