@@ -70,7 +70,7 @@ with col3:
     # --- 瀑布图 ---
     st.markdown("<h3 style='color:darkorange;'>Waterfall Plot</h3>", unsafe_allow_html=True)
     fig, ax = plt.subplots(figsize=(6, 6))
-    shap.plots.waterfall(shap_expl, show=False)
+    shap.plots.waterfall(shap_expl, max_display=len(feature_names), show=False)
     st.pyplot(fig)
 
 # ------------------ 横跨三列显示完整力图 ------------------
@@ -91,3 +91,4 @@ html_code = f"""
 """
 
 components.html(html_code, height=500, scrolling=True)
+
