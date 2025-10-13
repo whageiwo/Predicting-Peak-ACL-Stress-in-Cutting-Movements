@@ -90,7 +90,7 @@ force_plot = shap.force_plot(
 )
 
 html_code = f"""
-<div style='width:100%; display:flex; justify-content:center; margin-top:20px;'>
+<div style='width:100%; display:flex; justify-content:center; margin-top:5px;'>
     <div style='width:100%; overflow-x:visible; border:1px solid #ddd; padding:5px;'>
         <head>{shap.getjs()}</head>
         {force_plot.html()}
@@ -98,5 +98,6 @@ html_code = f"""
 </div>
 """
 components.html(html_code, height=400)
+
 
 
