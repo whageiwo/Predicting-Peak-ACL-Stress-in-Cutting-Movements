@@ -29,9 +29,9 @@ feature_names = [
 
 # 简写特征名称（用于可视化）
 short_feature_names = [
-    "HFA", "KFA", "HAA",
-    "KVA", "AVA", "KVM",
-    "KFM", "ASF", "H/Q"
+    "Hip Flexion", "Knee Flexion", "Hip Adduction",
+    "Knee Valgus", "Ankle Valgus", "KVM",
+    "KFM", "Anterior Shear", "H/Q Ratio"
 ]
 
 # ------------------ 页面布局 ------------------
@@ -89,12 +89,36 @@ with col3:
         feature_names=short_feature_names  # 使用简写名称
     )
     
-    # 调整力图显示大小
+    # 创建带滚动条的容器
     html_code = f"""
     <style>
-    .shap-force-plot text {{ font-size: 12px !important; }}
+    .shap-force-plot text {{
+        font-size: 12px !important;
+    }}
+    .scroll-container {{
+        width: 100%;
+        overflow-x: auto;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 10px;
+        background-color: white;
+    }}
+    .scroll-container::-webkit-scrollbar {{
+        height: 12px;
+    }}
+    .scroll-container::-webkit-scrollbar-track {{
+        background: #f1f1f1;
+        border-radius: 6px;
+    }}
+    .scroll-container::-webkit-scrollbar-thumb {{
+        background: #888;
+        border-radius: 6px;
+    }}
+    .scroll-container::-webkit-scrollbar-thumb:hover {{
+        background: #555;
+    }}
     </style>
-    <div style='width:100%; overflow-x:auto;'>
+    <div class="scroll-container">
         <head>{shap.getjs()}</head>
         {force_plot.html()}
     </div>
