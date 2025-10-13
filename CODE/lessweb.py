@@ -37,13 +37,14 @@ col1, col2, col3 = st.columns([1.2, 1.2, 2.5])
 label_size = "16px"
 inputs = []
 
-# -------- 输入特征值 --------
+# -------- 左列前5个特征 --------
 with col1:
     for name in feature_names[:5]:
         st.markdown(f"<p style='font-size:{label_size}; margin:0'>{name}</p>", unsafe_allow_html=True)
         val = st.number_input("", value=0.0, step=0.1, format="%.2f", key=name)
         inputs.append(val)
 
+# -------- 中列后4个特征 --------
 with col2:
     for name in feature_names[5:]:
         st.markdown(f"<p style='font-size:{label_size}; margin:0'>{name}</p>", unsafe_allow_html=True)
@@ -52,7 +53,7 @@ with col2:
 
 X_input = np.array([inputs])
 
-# -------- 预测结果 --------
+# -------- 回归预测输出 --------
 pred = model.predict(X_input)[0]
 
 with col2:
@@ -60,57 +61,38 @@ with col2:
     st.markdown("<h3 style='color:darkgreen;'>Predicted Value</h3>", unsafe_allow_html=True)
     st.markdown(f"<p style='color:blue; font-size:40px; font-weight:bold;'>{pred:.3f}</p>", unsafe_allow_html=True)
 
-# -------- SHAP 可视化 --------
+# -------- 右列：SHAP 可视化（带左右滑动） --------
 with col3:
     explainer = shap.TreeExplainer(model)
     shap_values = explainer(X_input)
     
-    # 修复瀑布图错误
-    try:
-        # 方法1：使用更新的SHAP API
-        st.markdown("<h3 style='color:darkorange;'>Waterfall Plot</h3>", unsafe_allow_html=True)
-        fig, ax = plt.subplots(figsize=(6, 6))
-        shap.plots.waterfall(shap_values[0], show=False)
-        st.pyplot(fig)
-    except Exception as e:
-        st.warning(f"Waterfall plot error: {str(e)}")
-        # 方法2：备用方案使用force plot
-        st.markdown("<h3 style='color:darkorange;'>Waterfall Plot (Alternative)</h3>", unsafe_allow_html=True)
-        fig, ax = plt.subplots(figsize=(6, 6))
-        shap.plots.bar(shap_values[0], show=False)
-        st.pyplot(fig)
+    # --- 瀑布图 ---
+    st.markdown("<h3 style='color:darkorange;'>Waterfall Plot</h3>", unsafe_allow_html=True)
+    shap_expl = shap.Explanation(
+        values=shap_values.values[0],
+        base_values=shap_values.base_values[0],
+        data=X_input[0],
+        feature_names=short_feature_names
+    )
+    fig, ax = plt.subplots(figsize=(6, 6))
+    shap.plots.waterfall(shap_expl, show=False)
+    st.pyplot(fig)
     
-    # 力图（带滚动条）
+    # --- 力图（可左右滑动） ---
     st.markdown("<h3 style='color:purple;'>Force Plot</h3>", unsafe_allow_html=True)
-    try:
-        force_plot = shap.force_plot(
-            explainer.expected_value,
-            shap_values.values[0],
-            X_input[0],
-            feature_names=short_feature_names
-        )
-        
-        html_code = f"""
-        <style>
-        .shap-force-plot text {{
-            font-size: 12px !important;
-        }}
-        .scroll-container {{
-            width: 100%;
-            overflow-x: auto;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            padding: 10px;
-            background-color: white;
-        }}
-        </style>
-        <div class="scroll-container">
+    force_plot = shap.force_plot(
+        explainer.expected_value,
+        shap_values.values[0],
+        X_input[0],
+        feature_names=short_feature_names
+    )
+    
+    html_code = f"""
+    <div style='width:100%; overflow-x:auto; border:1px solid #ddd;'>
+        <div style='width:{max(1200, len(short_feature_names)*150)}px;'> 
             <head>{shap.getjs()}</head>
             {force_plot.html()}
         </div>
-        """
-        components.html(html_code, height=300)
-    except Exception as e:
-        st.error(f"Force plot error: {str(e)}")
-
-
+    </div>
+    """
+    components.html(html_code, height=400)
