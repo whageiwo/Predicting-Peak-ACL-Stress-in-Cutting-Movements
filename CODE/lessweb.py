@@ -20,7 +20,7 @@ st.markdown("<h1 style='text-align: center; color: darkred;'>Predicting Peak ACL
 model = joblib.load("final_XGJ_model.bin")   # ✅ joblib加载
 
 # ------------------ 定义特征名称 ------------------
-feature_names = ["HFA", "KFA", "HAA", "KVA", "AVA", "KVM", "KFM", "ASF", "H/Q"]
+feature_names = ["Hip Flexion Angle(HFA)", "Knee Flexion Angle(KFA)", "Hip Adduction Ankle(HAA)", "Knee Valgus Ankle(KVA)", "Ankle Valgus Ankle(AVA)", "Knee Valgus Moment(KVM)", "Knee Flexion moment(KFM)", "Anterior Tibial Shear Force (ASF)", "Hamstring/Quadriceps(H/Q)"]
 
 # ------------------ 页面布局 ------------------
 col1, col2, col3 = st.columns([1.2, 1.2, 2.5])
