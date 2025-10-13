@@ -20,14 +20,12 @@ st.markdown("<h1 style='text-align: center; color: darkred;'>Predicting Peak ACL
 model = joblib.load("final_XGJ_model.bin")
 
 # ------------------ 定义特征名称 ------------------
-# 完整特征名称（用于输入界面）
 feature_full_names = [
-   "Hip Flexion Angle(HFA)", "Knee Flexion Angle(KFA)", "Hip Adduction Ankle(HAA)",
+    "Hip Flexion Angle(HFA)", "Knee Flexion Angle(KFA)", "Hip Adduction Ankle(HAA)",
     "Knee Valgus Ankle(KVA)", "Ankle Valgus Ankle(AVA)", "Knee Valgus Moment(KVM)",
     "Knee Flexion moment(KFM)", "Anterior Tibial Shear Force (ASF)", "Hamstring/Quadriceps(H/Q)"
 ]
 
-# 缩写特征名称（用于SHAP可视化）
 feature_abbreviations = [
     "HFA", "KFA", "HAA",
     "KVA", "AVA", "KVM",
@@ -63,43 +61,43 @@ with col2:
     st.markdown("<h3 style='color:darkgreen;'>Predicted Value</h3>", unsafe_allow_html=True)
     st.markdown(f"<p style='color:blue; font-size:40px; font-weight:bold;'>{pred:.3f}</p>", unsafe_allow_html=True)
 
-# -------- 右列：SHAP 可视化 --------
+# -------- 右列：SHAP 瀑布图 --------
 with col3:
     explainer = shap.TreeExplainer(model)
     shap_values = explainer(X_input)
 
-    # 使用缩写名称创建Explanation对象
     shap_expl = shap.Explanation(
         values=shap_values.values[0],
         base_values=shap_values.base_values[0],
         data=X_input[0],
-        feature_names=feature_abbreviations  # 直接使用缩写名称
+        feature_names=feature_abbreviations
     )
 
-    # --- 瀑布图 ---
     st.markdown("<h3 style='color:darkorange;'>Waterfall Plot</h3>", unsafe_allow_html=True)
     fig, ax = plt.subplots(figsize=(6, 6))
     shap.plots.waterfall(shap_expl, show=False)
     st.pyplot(fig)
 
-# ------------------ 横跨三列显示完整力图 ------------------
+# -------- 力图：自适应宽度 + 横跨三列居中 + 显示全部特征 --------
 st.markdown("<h3 style='color:purple; text-align:center;'>Force Plot</h3>", unsafe_allow_html=True)
 
-# 使用缩写名称创建力图
 force_plot = shap.force_plot(
     explainer.expected_value,
     shap_values.values[0],
     X_input[0],
-    feature_names=feature_abbreviations  # 直接使用缩写名称
+    feature_names=feature_abbreviations,
+    link='identity'  # 避免只显示 top 8
 )
 
-# 调整力图显示
 html_code = f"""
-<div style='display:flex; justify-content:center;'>
-  <div style='width:95%; overflow-x:auto;'>
-    <head>{shap.getjs()}</head>
-    {force_plot.html()}
-  </div>
+<div style='width:100%; display:flex; justify-content:center; margin-top:20px;'>
+    <div style='width:90%; overflow-x:auto; border:1px solid #ddd; padding:5px;'>
+        <div style='min-width:{len(feature_abbreviations)*150}px;'>
+            <head>{shap.getjs()}</head>
+            {force_plot.html()}
+        </div>
+    </div>
 </div>
 """
-components.html(html_code, height=300, scrolling=True)
+components.html(html_code, height=400)
+
