@@ -22,9 +22,9 @@ model = joblib.load("final_XGJ_model.bin")
 # ------------------ 定义特征名称 ------------------
 # 完整特征名称（用于输入界面）
 feature_full_names = [
-    "Hip Flexion Angle", "Knee Flexion Angle", "Hip Adduction Ankle",
-    "Knee Valgus Ankle", "Ankle Valgus Ankle", "Knee Valgus Moment",
-    "Knee Flexion moment", "Anterior Tibial Shear Force", "Hamstring/Quadriceps"
+   "Hip Flexion Angle(HFA)", "Knee Flexion Angle(KFA)", "Hip Adduction Ankle(HAA)",
+    "Knee Valgus Ankle(KVA)", "Ankle Valgus Ankle(AVA)", "Knee Valgus Moment(KVM)",
+    "Knee Flexion moment(KFM)", "Anterior Tibial Shear Force (ASF)", "Hamstring/Quadriceps(H/Q)"
 ]
 
 # 缩写特征名称（用于SHAP可视化）
@@ -103,4 +103,5 @@ html_code = f"""
 </div>
 """
 components.html(html_code, height=300, scrolling=True)
+
 
