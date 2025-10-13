@@ -81,13 +81,13 @@ shap_expl = shap.Explanation(
     feature_names=feature_names
 )
 
-# --- 瀑布图 ---
+# --- 瀑布图（保持原样） ---
 st.markdown("<h3 style='color:darkorange;'>Waterfall Plot</h3>", unsafe_allow_html=True)
 fig, ax = plt.subplots(figsize=(6, 6))
 shap.plots.waterfall(shap_expl, max_display=len(feature_names), show=False)
 st.pyplot(fig)
 
-# --- 力图（横跨整个页面宽度） ---
+# --- 力图（横跨整行） ---
 st.markdown("<h3 style='color:purple; text-align:center;'>Force Plot</h3>", unsafe_allow_html=True)
 
 force_plot = shap.force_plot(
@@ -107,6 +107,5 @@ html_code = f"""
 </div>
 """
 
+# 显示完整力图
 components.html(html_code, height=600, scrolling=True)
-
-
