@@ -16,39 +16,34 @@ plt.rcParams['font.weight'] = 'bold'
 # ------------------ 页面标题 ------------------
 st.markdown("<h1 style='text-align: center; color: darkred;'>Predicting Peak ACL Stress in Cutting Movements</h1>", unsafe_allow_html=True)
 
-# ------------------ 加载模型 ------------------
-model = joblib.load("final_XGJ_model.bin")
+# ------------------ 加载模型（回归模型） ------------------
+model = joblib.load("final_XGJ_model.bin")   # ✅ joblib加载
 
 # ------------------ 定义特征名称 ------------------
-# 完整特征名称（用于输入界面）
-feature_full_names = [
+feature_names = [
     "Hip Flexion Angle(HFA)", "Knee Flexion Angle(KFA)", "Hip Adduction Ankle(HAA)",
     "Knee Valgus Ankle(KVA)", "Ankle Valgus Ankle(AVA)", "Knee Valgus Moment(KVM)",
     "Knee Flexion moment(KFM)", "Anterior Tibial Shear Force (ASF)", "Hamstring/Quadriceps(H/Q)"
 ]
 
-# 直接定义的缩写名称（用于SHAP可视化）
-feature_abbreviations = [
-    "HFA", "KFA", "HAA",
-    "KVA", "AVA", "KVM",
-    "KFM", "ASF", "H/Q"
-]
+# 特征缩写（用于 SHAP 可视化）
+feature_short_names = ["HFA", "KFA", "HAA", "KVA", "AVA", "KVM", "KFM", "ASF", "H/Q"]
 
 # ------------------ 页面布局 ------------------
 col1, col2, col3 = st.columns([1.2, 1.2, 2.5])
 label_size = "16px"
 inputs = []
 
-# -------- 左列前5个特征 --------
+# -------- 左列前 5 个特征 --------
 with col1:
-    for name in feature_full_names[:5]:
+    for name in feature_names[:5]:
         st.markdown(f"<p style='font-size:{label_size}; margin:0'>{name}</p>", unsafe_allow_html=True)
         val = st.number_input("", value=0.0, step=0.1, format="%.2f", key=name)
         inputs.append(val)
 
-# -------- 中列后4个特征 --------
+# -------- 中列后 4 个特征 --------
 with col2:
-    for name in feature_full_names[5:]:
+    for name in feature_names[5:]:
         st.markdown(f"<p style='font-size:{label_size}; margin:0'>{name}</p>", unsafe_allow_html=True)
         val = st.number_input("", value=0.0, step=0.1, format="%.2f", key=name)
         inputs.append(val)
@@ -63,17 +58,17 @@ with col2:
     st.markdown("<h3 style='color:darkgreen;'>Predicted Value</h3>", unsafe_allow_html=True)
     st.markdown(f"<p style='color:blue; font-size:40px; font-weight:bold;'>{pred:.3f}</p>", unsafe_allow_html=True)
 
-# -------- 右列：SHAP 可视化 --------
+# -------- 右列：SHAP 可视化（瀑布图 + 力图） --------
 with col3:
     explainer = shap.TreeExplainer(model)
     shap_values = explainer(X_input)
 
-    # 使用直接定义的缩写名称
+    # 使用特征缩写创建 SHAP Explanation 对象
     shap_expl = shap.Explanation(
         values=shap_values.values[0],
         base_values=shap_values.base_values[0],
         data=X_input[0],
-        feature_names=feature_abbreviations  # 直接使用缩写名称
+        feature_names=feature_short_names
     )
 
     # --- 瀑布图 ---
@@ -85,24 +80,9 @@ with col3:
     # --- 力图 ---
     st.markdown("<h3 style='color:purple;'>Force Plot</h3>", unsafe_allow_html=True)
     force_plot = shap.force_plot(
-        explainer.expected_value,
-        shap_values.values[0],
-        X_input[0],
-        feature_names=feature_abbreviations  # 直接使用缩写名称
+        explainer.expected_value, shap_values.values[0], X_input[0], feature_names=feature_short_names
     )
-    
-    # 调整力图显示
-    html_code = f"""
-    <style>
-    .shap-force-plot text {{
-        font-size: 12px !important;
-    }}
-    </style>
-    <div style='width:100%; overflow-x:auto;'>
-        <head>{shap.getjs()}</head>
-        {force_plot.html()}
-    </div>
-    """
-    components.html(html_code, height=300)
+    components.html(f"<head>{shap.getjs()}</head>{force_plot.html()}", height=300)
+
 
 
