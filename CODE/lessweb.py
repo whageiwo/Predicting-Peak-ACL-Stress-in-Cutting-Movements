@@ -39,14 +39,14 @@ inputs = []
 
 # -------- 左列前5个特征 --------
 with col1:
-    for i, name in enumerate(feature_full_names[:5]):
+    for name in feature_full_names[:5]:
         st.markdown(f"<p style='font-size:{label_size}; margin:0'>{name}</p>", unsafe_allow_html=True)
         val = st.number_input("", value=0.0, step=0.1, format="%.2f", key=name)
         inputs.append(val)
 
 # -------- 中列后4个特征 --------
 with col2:
-    for i, name in enumerate(feature_full_names[5:]):
+    for name in feature_full_names[5:]:
         st.markdown(f"<p style='font-size:{label_size}; margin:0'>{name}</p>", unsafe_allow_html=True)
         val = st.number_input("", value=0.0, step=0.1, format="%.2f", key=name)
         inputs.append(val)
@@ -61,7 +61,7 @@ with col2:
     st.markdown("<h3 style='color:darkgreen;'>Predicted Value</h3>", unsafe_allow_html=True)
     st.markdown(f"<p style='color:blue; font-size:40px; font-weight:bold;'>{pred:.3f}</p>", unsafe_allow_html=True)
 
-# -------- 右列：SHAP 瀑布图 --------
+# -------- 右列：SHAP 瀑布图 + 力图 --------
 with col3:
     explainer = shap.TreeExplainer(model)
     shap_values = explainer(X_input)
@@ -73,31 +73,29 @@ with col3:
         feature_names=feature_abbreviations
     )
 
+    # 瀑布图
     st.markdown("<h3 style='color:darkorange;'>Waterfall Plot</h3>", unsafe_allow_html=True)
     fig, ax = plt.subplots(figsize=(6, 6))
     shap.plots.waterfall(shap_expl, show=False)
     st.pyplot(fig)
 
-# -------- 力图：横跨页面居中，不滚动 --------
-st.markdown("<h3 style='color:purple; text-align:center;'>Force Plot</h3>", unsafe_allow_html=True)
+    # 力图（瀑布图下方）
+    st.markdown("<h3 style='color:purple;'>Force Plot</h3>", unsafe_allow_html=True)
+    force_plot = shap.force_plot(
+        explainer.expected_value,
+        shap_values.values[0],
+        X_input[0],
+        feature_names=feature_abbreviations,
+        link='identity'
+    )
 
-force_plot = shap.force_plot(
-    explainer.expected_value,
-    shap_values.values[0],
-    X_input[0],
-    feature_names=feature_abbreviations,
-    link='identity'  # 避免只显示 top 8
-)
-
-html_code = f"""
-<div style='width:100%; display:flex; justify-content:center; margin-top:0px;'>
-    <div style='width:100%; overflow-x:visible; border:1px solid #ddd; padding:5px;'>
+    html_code = f"""
+    <div style='width:100%; overflow-x:visible; border:1px solid #ddd; padding:5px; margin-top:5px;'>
         <head>{shap.getjs()}</head>
         {force_plot.html()}
     </div>
-</div>
-"""
-components.html(html_code, height=400)
+    """
+    components.html(html_code, height=400)
 
 
 
