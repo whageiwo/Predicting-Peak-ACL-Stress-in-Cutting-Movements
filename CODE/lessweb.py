@@ -5,7 +5,6 @@ import shap
 import joblib
 import matplotlib.pyplot as plt
 import streamlit.components.v1 as components
-import re
 
 # ------------------ 页面配置 ------------------
 st.set_page_config(page_title="Predicting Peak ACL Stress in Cutting Movements", layout="wide")
@@ -21,18 +20,19 @@ st.markdown("<h1 style='text-align: center; color: darkred;'>Predicting Peak ACL
 model = joblib.load("final_XGJ_model.bin")
 
 # ------------------ 定义特征名称 ------------------
-feature_names = [
-    "Hip Flexion Angle(HFA)", "Knee Flexion Angle(KFA)", "Hip Adduction Ankle(HAA)",
-    "Knee Valgus Ankle(KVA)", "Ankle Valgus Ankle(AVA)", "Knee Valgus Moment(KVM)",
-    "Knee Flexion moment(KFM)", "Anterior Tibial Shear Force (ASF)", "Hamstring/Quadriceps(H/Q)"
+# 完整特征名称（用于输入界面）
+feature_full_names = [
+    "Hip Flexion Angle", "Knee Flexion Angle", "Hip Adduction Ankle",
+    "Knee Valgus Ankle", "Ankle Valgus Ankle", "Knee Valgus Moment",
+    "Knee Flexion moment", "Anterior Tibial Shear Force", "Hamstring/Quadriceps"
 ]
 
-# 提取括号内的缩写
-def extract_abbreviation(name):
-    match = re.search(r'$(.*?)$', name)
-    return match.group(1) if match else name
-
-abbreviated_names = [extract_abbreviation(name) for name in feature_names]
+# 缩写特征名称（用于SHAP可视化）
+feature_abbreviations = [
+    "HFA", "KFA", "HAA",
+    "KVA", "AVA", "KVM",
+    "KFM", "ASF", "H/Q"
+]
 
 # ------------------ 页面布局 ------------------
 col1, col2, col3 = st.columns([1.2, 1.2, 2.5])
@@ -41,14 +41,14 @@ inputs = []
 
 # -------- 左列前5个特征 --------
 with col1:
-    for name in feature_names[:5]:
+    for i, name in enumerate(feature_full_names[:5]):
         st.markdown(f"<p style='font-size:{label_size}; margin:0'>{name}</p>", unsafe_allow_html=True)
         val = st.number_input("", value=0.0, step=0.1, format="%.2f", key=name)
         inputs.append(val)
 
 # -------- 中列后4个特征 --------
 with col2:
-    for name in feature_names[5:]:
+    for i, name in enumerate(feature_full_names[5:]):
         st.markdown(f"<p style='font-size:{label_size}; margin:0'>{name}</p>", unsafe_allow_html=True)
         val = st.number_input("", value=0.0, step=0.1, format="%.2f", key=name)
         inputs.append(val)
@@ -73,7 +73,7 @@ with col3:
         values=shap_values.values[0],
         base_values=shap_values.base_values[0],
         data=X_input[0],
-        feature_names=abbreviated_names  # 使用缩写名称
+        feature_names=feature_abbreviations  # 直接使用缩写名称
     )
 
     # --- 瀑布图 ---
@@ -87,10 +87,10 @@ st.markdown("<h3 style='color:purple; text-align:center;'>Force Plot</h3>", unsa
 
 # 使用缩写名称创建力图
 force_plot = shap.force_plot(
-    explainer.expected_value, 
-    shap_values.values[0], 
-    X_input[0], 
-    feature_names=abbreviated_names  # 使用缩写名称
+    explainer.expected_value,
+    shap_values.values[0],
+    X_input[0],
+    feature_names=feature_abbreviations  # 直接使用缩写名称
 )
 
 # 调整力图显示
@@ -103,3 +103,4 @@ html_code = f"""
 </div>
 """
 components.html(html_code, height=300, scrolling=True)
+
