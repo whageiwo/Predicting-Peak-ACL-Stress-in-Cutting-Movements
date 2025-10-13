@@ -80,13 +80,14 @@ force_plot = shap.force_plot(
     explainer.expected_value, shap_values.values[0], X_input[0], feature_names=feature_names
 )
 
-# ✅ 自动适配 + 居中 + 不裁剪
+# ✅ 改进版：横向滚动 + 宽度自动撑满 + 特征名完全显示
 html_code = f"""
 <div style='display:flex; justify-content:center;'>
-  <div style='width:95%; overflow-x:auto;'>
+  <div style='width:1800px; overflow-x:auto; white-space:nowrap;'>
     <head>{shap.getjs()}</head>
     {force_plot.html()}
   </div>
 </div>
 """
-components.html(html_code, height=1000, scrolling=True)
+
+components.html(html_code, height=500, scrolling=True)
