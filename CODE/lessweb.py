@@ -20,10 +20,18 @@ st.markdown("<h1 style='text-align: center; color: darkred;'>Predicting Peak ACL
 model = joblib.load("final_XGJ_model.bin")
 
 # ------------------ 定义特征名称 ------------------
+# 原始特征名称（用于输入和预测）
 feature_names = [
     "Hip Flexion Angle(HFA)", "Knee Flexion Angle(KFA)", "Hip Adduction Ankle(HAA)",
     "Knee Valgus Ankle(KVA)", "Ankle Valgus Ankle(AVA)", "Knee Valgus Moment(KVM)",
     "Knee Flexion moment(KFM)", "Anterior Tibial Shear Force (ASF)", "Hamstring/Quadriceps(H/Q)"
+]
+
+# 简写特征名称（用于可视化）
+short_feature_names = [
+    "HFA", "KFA", "HAA",
+    "KVA", "AVA", "KVM",
+    "KFM", "ASF", "H/Q"
 ]
 
 # ------------------ 页面布局 ------------------
@@ -59,35 +67,38 @@ with col2:
 with col3:
     explainer = shap.TreeExplainer(model)
     shap_values = explainer(X_input)
-
+    
+    # --- 瀑布图（使用简写特征名称）---
+    st.markdown("<h3 style='color:darkorange;'>Waterfall Plot</h3>", unsafe_allow_html=True)
     shap_expl = shap.Explanation(
         values=shap_values.values[0],
         base_values=shap_values.base_values[0],
         data=X_input[0],
-        feature_names=feature_names
+        feature_names=short_feature_names  # 使用简写名称
     )
-
-    # --- 瀑布图 ---
-    st.markdown("<h3 style='color:darkorange;'>Waterfall Plot</h3>", unsafe_allow_html=True)
     fig, ax = plt.subplots(figsize=(6, 6))
     shap.plots.waterfall(shap_expl, show=False)
     st.pyplot(fig)
+    
+    # --- 力图（使用简写特征名称）---
+    st.markdown("<h3 style='color:purple;'>Force Plot</h3>", unsafe_allow_html=True)
+    force_plot = shap.force_plot(
+        explainer.expected_value,
+        shap_values.values[0],
+        X_input[0],
+        feature_names=short_feature_names  # 使用简写名称
+    )
+    
+    # 调整力图显示大小
+    html_code = f"""
+    <style>
+    .shap-force-plot text {{ font-size: 12px !important; }}
+    </style>
+    <div style='width:100%; overflow-x:auto;'>
+        <head>{shap.getjs()}</head>
+        {force_plot.html()}
+    </div>
+    """
+    components.html(html_code, height=300)
 
-# ------------------ 横跨三列显示完整力图 ------------------
-st.markdown("<h3 style='color:purple; text-align:center;'>Force Plot</h3>", unsafe_allow_html=True)
-
-force_plot = shap.force_plot(
-    explainer.expected_value, shap_values.values[0], X_input[0], feature_names=feature_names
-)
-
-# ✅ 自动适配 + 居中 + 不裁剪
-html_code = f"""
-<div style='display:flex; justify-content:center;'>
-  <div style='width:95%; overflow-x:auto;'>
-    <head>{shap.getjs()}</head>
-    {force_plot.html()}
-  </div>
-</div>
-"""
-components.html(html_code, height=3000, scrolling=True)
 
