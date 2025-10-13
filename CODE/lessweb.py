@@ -61,7 +61,7 @@ with col2:
     st.markdown("<h3 style='color:darkgreen;'>Predicted Value</h3>", unsafe_allow_html=True)
     st.markdown(f"<p style='color:blue; font-size:40px; font-weight:bold;'>{pred:.3f}</p>", unsafe_allow_html=True)
 
-# -------- 右列：SHAP 可视化（带左右滑动） --------
+# -------- 右列：SHAP 可视化 --------
 with col3:
     explainer = shap.TreeExplainer(model)
     shap_values = explainer(X_input)
@@ -77,22 +77,27 @@ with col3:
     fig, ax = plt.subplots(figsize=(6, 6))
     shap.plots.waterfall(shap_expl, show=False)
     st.pyplot(fig)
-    
-    # --- 力图（可左右滑动） ---
-    st.markdown("<h3 style='color:purple;'>Force Plot</h3>", unsafe_allow_html=True)
-    force_plot = shap.force_plot(
-        explainer.expected_value,
-        shap_values.values[0],
-        X_input[0],
-        feature_names=short_feature_names
-    )
-    
-    html_code = f"""
-    <div style='width:100%; overflow-x:auto; border:1px solid #ddd;'>
-        <div style='width:{max(1200, len(short_feature_names)*150)}px;'> 
+
+# -------- 力图：自适应宽度 + 横跨三列居中 --------
+st.markdown("<h3 style='color:purple; text-align:center;'>Force Plot</h3>", unsafe_allow_html=True)
+
+force_plot = shap.force_plot(
+    explainer.expected_value,
+    shap_values.values[0],
+    X_input[0],
+    feature_names=short_feature_names
+)
+
+# HTML 容器横跨全宽，力图自适应
+html_code = f"""
+<div style='width:100%; display:flex; justify-content:center; margin-top:20px;'>
+    <div style='width:90%; overflow-x:auto; border:1px solid #ddd; padding:5px;'>
+        <div style='min-width:{len(short_feature_names)*150}px;'> 
             <head>{shap.getjs()}</head>
             {force_plot.html()}
         </div>
     </div>
-    """
-    components.html(html_code, height=400)
+</div>
+"""
+components.html(html_code, height=400)
+
