@@ -5,6 +5,7 @@ import shap
 import joblib
 import matplotlib.pyplot as plt
 import streamlit.components.v1 as components
+import re
 
 # ------------------ 页面配置 ------------------
 st.set_page_config(page_title="Predicting Peak ACL Stress in Cutting Movements", layout="wide")
@@ -25,6 +26,13 @@ feature_names = [
     "Knee Valgus Ankle(KVA)", "Ankle Valgus Ankle(AVA)", "Knee Valgus Moment(KVM)",
     "Knee Flexion moment(KFM)", "Anterior Tibial Shear Force (ASF)", "Hamstring/Quadriceps(H/Q)"
 ]
+
+# 提取括号内的缩写
+def extract_abbreviation(name):
+    match = re.search(r'$(.*?)$', name)
+    return match.group(1) if match else name
+
+abbreviated_names = [extract_abbreviation(name) for name in feature_names]
 
 # ------------------ 页面布局 ------------------
 col1, col2, col3 = st.columns([1.2, 1.2, 2.5])
@@ -60,11 +68,12 @@ with col3:
     explainer = shap.TreeExplainer(model)
     shap_values = explainer(X_input)
 
+    # 使用缩写名称创建Explanation对象
     shap_expl = shap.Explanation(
         values=shap_values.values[0],
         base_values=shap_values.base_values[0],
         data=X_input[0],
-        feature_names=feature_names
+        feature_names=abbreviated_names  # 使用缩写名称
     )
 
     # --- 瀑布图 ---
@@ -76,11 +85,15 @@ with col3:
 # ------------------ 横跨三列显示完整力图 ------------------
 st.markdown("<h3 style='color:purple; text-align:center;'>Force Plot</h3>", unsafe_allow_html=True)
 
+# 使用缩写名称创建力图
 force_plot = shap.force_plot(
-    explainer.expected_value, shap_values.values[0], X_input[0], feature_names=feature_names
+    explainer.expected_value, 
+    shap_values.values[0], 
+    X_input[0], 
+    feature_names=abbreviated_names  # 使用缩写名称
 )
 
-# ✅ 自动适配 + 居中 + 不裁剪
+# 调整力图显示
 html_code = f"""
 <div style='display:flex; justify-content:center;'>
   <div style='width:95%; overflow-x:auto;'>
@@ -89,4 +102,4 @@ html_code = f"""
   </div>
 </div>
 """
-components.html(html_code, height=1000, scrolling=True)
+components.html(html_code, height=300, scrolling=True)
