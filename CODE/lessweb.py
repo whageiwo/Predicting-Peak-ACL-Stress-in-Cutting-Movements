@@ -78,7 +78,7 @@ with col3:
     shap.plots.waterfall(shap_expl, show=False)
     st.pyplot(fig)
 
-# -------- 力图：自适应宽度 + 横跨三列居中 + 显示全部特征 --------
+# -------- 力图：横跨页面居中，不滚动 --------
 st.markdown("<h3 style='color:purple; text-align:center;'>Force Plot</h3>", unsafe_allow_html=True)
 
 force_plot = shap.force_plot(
@@ -91,13 +91,12 @@ force_plot = shap.force_plot(
 
 html_code = f"""
 <div style='width:100%; display:flex; justify-content:center; margin-top:20px;'>
-    <div style='width:90%; overflow-x:auto; border:1px solid #ddd; padding:5px;'>
-        <div style='min-width:{len(feature_abbreviations)*150}px;'>
-            <head>{shap.getjs()}</head>
-            {force_plot.html()}
-        </div>
+    <div style='width:100%; overflow-x:visible; border:1px solid #ddd; padding:5px;'>
+        <head>{shap.getjs()}</head>
+        {force_plot.html()}
     </div>
 </div>
 """
 components.html(html_code, height=400)
+
 
