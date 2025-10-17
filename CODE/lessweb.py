@@ -21,9 +21,9 @@ model = joblib.load("final_XGJ_model.bin")   # ✅ joblib加载
 
 # ------------------ 定义特征名称 ------------------
 feature_names = [
-    "Hip Flexion Angle(HFA)", "Knee Flexion Angle(KFA)", "Hip Adduction Ankle(HAA)",
-    "Knee Valgus Ankle(KVA)", "Ankle Valgus Ankle(AVA)", "Knee Valgus Moment(KVM)",
-    "Knee Flexion moment(KFM)", "Anterior Tibial Shear Force (ASF)", "Hamstring/Quadriceps(H/Q)"
+    "Hip Flexion Angle(HFA)", "Knee Flexion Angle(KFA)", "Hip Adduction Angle(HAA)",
+    "Knee Valgus Angle(KVA)", "Ankle Valgus Angle(AVA)", "Knee Valgus Moment(KVM)",
+    "Knee Flexion moment(KFM)", "Anterior Tibial Shear Force(ASF)", "Hamstring/Quadriceps(H/Q)"
 ]
 
 # 特征缩写（用于 SHAP 可视化）
@@ -83,6 +83,7 @@ with col3:
         explainer.expected_value, shap_values.values[0], X_input[0], feature_names=feature_short_names
     )
     components.html(f"<head>{shap.getjs()}</head>{force_plot.html()}", height=300)
+
 
 
 
