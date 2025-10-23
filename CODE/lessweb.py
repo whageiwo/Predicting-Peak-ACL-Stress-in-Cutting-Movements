@@ -22,12 +22,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# ------------------ 版本信息 ------------------
-st.sidebar.markdown("### Environment Info")
-st.sidebar.write(f"**SHAP version:** {shap.__version__}")
-st.sidebar.write(f"**XGBoost version:** {xgb.__version__}")
-
-# ------------------ 加载模型 ------------------
+# ------------------ 加载模型（回归模型） ------------------
 model = joblib.load("final_XGJ_model.bin")  # ✅ joblib加载
 
 # ------------------ 定义特征名称 ------------------
@@ -89,66 +84,38 @@ with col2:
 
 # -------- 右列：SHAP 可视化（瀑布图 + 力图） --------
 with col3:
-    try:
-        # ✅ 优先使用新版 SHAP 的通用解释器
-        explainer = shap.Explainer(model)
-        shap_values = explainer(X_input)
+    explainer = shap.TreeExplainer(model)
+    shap_values = explainer(X_input)
 
-        # --- 创建 Explanation 对象 ---
-        shap_expl = shap.Explanation(
-            values=shap_values.values[0],
-            base_values=shap_values.base_values[0],
-            data=X_input[0],
-            feature_names=feature_short_names
-        )
+    # 使用特征缩写创建 SHAP Explanation 对象
+    shap_expl = shap.Explanation(
+        values=shap_values.values[0],
+        base_values=shap_values.base_values[0],
+        data=X_input[0],
+        feature_names=feature_short_names
+    )
 
-        # --- 瀑布图 ---
-        st.markdown(
-            "<h3 style='color:darkorange;'>Waterfall Plot</h3>",
-            unsafe_allow_html=True
-        )
-        fig, ax = plt.subplots(figsize=(6, 6))
-        shap.plots.waterfall(shap_expl, show=False)
-        st.pyplot(fig)
+    # --- 瀑布图 ---
+    st.markdown(
+        "<h3 style='color:darkorange;'>Waterfall Plot</h3>",
+        unsafe_allow_html=True
+    )
+    fig, ax = plt.subplots(figsize=(6, 6))
+    shap.plots.waterfall(shap_expl, show=False)
+    st.pyplot(fig)
 
-        # --- 力图 ---
-        st.markdown(
-            "<h3 style='color:purple;'>Force Plot</h3>",
-            unsafe_allow_html=True
-        )
-        force_plot = shap.force_plot(
-            shap_expl.base_values,
-            shap_expl.values,
-            shap_expl.data,
-            feature_names=feature_short_names
-        )
-        components.html(
-            f"<head>{shap.getjs()}</head>{force_plot.html()}",
-            height=300
-        )
-
-    except Exception as e:
-        # ✅ 兼容旧版 SHAP（如0.41~0.45）
-        st.warning("⚠️ Detected SHAP/XGBoost version incompatibility, using fallback mode.")
-        booster = model.get_booster()
-        explainer = shap.TreeExplainer(booster, feature_perturbation="tree_path_dependent")
-        shap_values = explainer.shap_values(X_input)
-
-        shap_expl = shap.Explanation(
-            values=shap_values[0],
-            base_values=explainer.expected_value,
-            data=X_input[0],
-            feature_names=feature_short_names
-        )
-
-        st.markdown(
-            "<h3 style='color:darkorange;'>Waterfall Plot (Fallback)</h3>",
-            unsafe_allow_html=True
-        )
-        fig, ax = plt.subplots(figsize=(6, 6))
-        shap.plots.waterfall(shap_expl, show=False)
-        st.pyplot(fig)
-
-        st.error(f"Error: {str(e)}")
-
-
+    # --- 力图 ---
+    st.markdown(
+        "<h3 style='color:purple;'>Force Plot</h3>",
+        unsafe_allow_html=True
+    )
+    force_plot = shap.force_plot(
+        explainer.expected_value,
+        shap_values.values[0],
+        X_input[0],
+        feature_names=feature_short_names
+    )
+    components.html(
+        f"<head>{shap.getjs()}</head>{force_plot.html()}",
+        height=300
+    )
