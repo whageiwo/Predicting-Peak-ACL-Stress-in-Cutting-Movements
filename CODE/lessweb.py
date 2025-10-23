@@ -23,8 +23,7 @@ st.markdown(
 )
 
 # ------------------ 加载模型（回归模型） ------------------
-model = joblib.load("final_XGJ_model.bin")  # ✅ joblib加载
-
+model = xgb.Booster()  # ✅ 新方式
 # ------------------ 定义特征名称 ------------------
 feature_names = [
     "Hip Flexion Angle(HFA)",
@@ -119,3 +118,4 @@ with col3:
         f"<head>{shap.getjs()}</head>{force_plot.html()}",
         height=300
     )
+
