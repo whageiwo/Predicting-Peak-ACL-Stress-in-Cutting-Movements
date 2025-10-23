@@ -2,5 +2,5 @@ streamlit>=1.49.1
 xgboost>=3.0.3
 numpy>=2.2.6
 matplotlib>=3.10.3
-shap>=0.48.0
+shap>=0.46.0
 joblib>=1.2.0
