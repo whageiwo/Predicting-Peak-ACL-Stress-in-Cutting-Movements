@@ -8,7 +8,7 @@ import streamlit.components.v1 as components
 
 # ------------------ 页面配置 ------------------
 st.set_page_config(
-    page_title="Predicting Peak ACL Stress in Cutting Movements",
+    page_title="Predicting Peak ACL Load in Cutting Movements",
     layout="wide"
 )
 
@@ -18,7 +18,7 @@ plt.rcParams['font.weight'] = 'bold'
 
 # ------------------ 页面标题 ------------------
 st.markdown(
-    "<h1 style='text-align: center; color: darkred;'>Predicting Peak ACL Stress in Cutting Movements</h1>",
+    "<h1 style='text-align: center; color: darkred;'>Predicting Peak ACL Load in Cutting Movements</h1>",
     unsafe_allow_html=True
 )
 
